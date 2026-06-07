@@ -6,7 +6,6 @@ import gussReady from '../assets/guss_ready.png';
 import gussStop from '../assets/guss_stop.png';
 import gussTapped from '../assets/guss_tapped.png';
 import './RoundPage.css';
-
 const RoundPage: React.FC = () => {
   const { uuid } = useParams<{ uuid: string }>();
   const navigate = useNavigate();
@@ -16,17 +15,13 @@ const RoundPage: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isTapping, setIsTapping] = useState(false);
   const [tapCount, setTapCount] = useState(0);
-  const [needReloadOnFinish, setNeedReloadOnFinish] = useState(false);
-
   const fetchRoundData = async () => {
     if (!uuid) return;
-    
     try {
       setLoading(true);
       const data = await apiService.getRound(uuid);
       setRoundData(data);
       setTapCount(0);
-      setNeedReloadOnFinish(new Date(data.round.end_datetime) > new Date());
     } catch (err) {
       setError('Ошибка загрузки данных раунда');
       console.error('Error fetching round data:', err);
@@ -34,67 +29,48 @@ const RoundPage: React.FC = () => {
       setLoading(false);
     }
   };
-
-
   useEffect(() => {
-    console.log('needReloadOnFinish', needReloadOnFinish);
     if (!roundData) return;
-
-    const isFinished = new Date() > new Date(roundData?.round.end_datetime);
-    if (isFinished) {
-      fetchRoundData(); // reload data from server
+    const end = new Date(roundData.round.end_datetime).getTime();
+    const now = Date.now();
+    if (end > now) {
+      const timeout = setTimeout(() => fetchRoundData(), end - now + 500);
+      return () => clearTimeout(timeout);
     }
-  }, [needReloadOnFinish]);
-
-  // Обновляем текущее время каждую секунду
+  }, [roundData]);
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
-
-  // Загружаем данные раунда
   useEffect(() => {
-
     fetchRoundData();
   }, [uuid]);
-
-  // Обработчик тапа
   const handleTap = async () => {
     if (!roundData || isTapping || !uuid) return;
-    
     try {
       setIsTapping(true);
       const response = await apiService.tap(uuid);
-      
-      // Обновляем счет только если сервер вернул больше очков, чем отображается
       if (response.score > tapCount) {
         setTapCount(response.score);
       }
     } catch (err) {
       console.error('Error performing tap:', err);
     } finally {
-      setTimeout(() => setIsTapping(false), 100); // Небольшая задержка для визуального эффекта
+      setTimeout(() => setIsTapping(false), 100); 
     }
   };
-
-  // Обработчик зажатия мыши
   const handleMouseDown = () => {
     if (!roundData || isTapping) return;
     setIsTapping(true);
   };
-
   const handleMouseUp = () => {
     setIsTapping(false);
   };
-
-  // Обработчик отпускания мыши вне элемента
   const handleMouseLeave = () => {
     setIsTapping(false);
   };
-
   if (loading) {
     return (
       <div className="round-page">
@@ -102,7 +78,6 @@ const RoundPage: React.FC = () => {
       </div>
     );
   }
-
   if (error || !roundData) {
     return (
       <div className="round-page">
@@ -113,51 +88,33 @@ const RoundPage: React.FC = () => {
       </div>
     );
   }
-
-
   const { round } = roundData;
   const startTime = new Date(round.start_datetime);
   const endTime = new Date(round.end_datetime);
-  
-  // Определяем состояние раунда
   const isBeforeStart = currentTime < startTime;
   const isActive = currentTime >= startTime && currentTime <= endTime;
   const isFinished = currentTime > endTime;
-
-  if (!isBeforeStart && isFinished && needReloadOnFinish) {
-    setNeedReloadOnFinish(false);
-  }
-  
-  // Вычисляем оставшееся время до начала
   const getTimeUntilStart = () => {
     const diff = startTime.getTime() - currentTime.getTime();
     if (diff <= 0) return '00:00:00';
-    
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
-
-  // Вычисляем оставшееся время до окончания
   const getTimeUntilEnd = () => {
     const diff = endTime.getTime() - currentTime.getTime();
     if (diff <= 0) return '00:00:00';
-    
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
-
   const getCurrentImage = () => {
     if (isTapping) return gussTapped;
     if (isActive) return gussReady;
     return gussStop;
   };
-
   const formatDateTime = (date: Date) => {
     return date.toLocaleString('ru-RU', {
       year: 'numeric',
@@ -168,16 +125,14 @@ const RoundPage: React.FC = () => {
       second: '2-digit'
     });
   };
-
   return (
     <div className="round-page">
       <div className="round-header">
         <button onClick={() => navigate('/')} className="back-button">
           ← Вернуться к списку раундов
         </button>
-        <h1>Раунд к={needReloadOnFinish} {round.uuid.slice(0, 8)}</h1>
+        <h1>Раунд {round.uuid.slice(0, 8)}</h1>
       </div>
-
       <div className="round-info">
         <div className="round-details">
           <div className="detail-item">
@@ -195,14 +150,12 @@ const RoundPage: React.FC = () => {
             </span>
           </div>
         </div>
-
         {isBeforeStart && (
           <div className="countdown">
             <h2>До начала раунда:</h2>
             <div className="countdown-timer">{getTimeUntilStart()}</div>
           </div>
         )}
-
         {isActive && (
           <div className="active-round">
             <h2>Раунд активен!</h2>
@@ -211,13 +164,11 @@ const RoundPage: React.FC = () => {
             </div>
           </div>
         )}
-
         {!isFinished && (
         <div className="score-section">
             <h3>Ваш счет: {tapCount}</h3>
           </div>
         )}
-
         {isFinished && 'totalScore' in roundData && roundData.totalScore !== undefined && (
           <div className="round-results">
             <h2>Результаты раунда</h2>
@@ -242,7 +193,6 @@ const RoundPage: React.FC = () => {
           </div>
         )}
       </div>
-
       <div className="guss-container">
         <img
           src={getCurrentImage()}
@@ -263,5 +213,4 @@ const RoundPage: React.FC = () => {
     </div>
   );
 };
-
-export default RoundPage;
+export default RoundPage;

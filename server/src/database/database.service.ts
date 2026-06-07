@@ -5,19 +5,14 @@ import { User } from '../models/user.model';
 import { Round } from '../models/round.model';
 import { Score } from '../models/score.model';
 import * as bcrypt from 'bcrypt';
-
 @Injectable()
 export class DatabaseService implements OnModuleInit {
   constructor(@InjectConnection() private sequelize: Sequelize) {}
-
   async onModuleInit() {
     try {
       await this.sequelize.authenticate();
       console.log('Database connection established successfully.');
-
-      // Check if users table exists
       const tableExists = await this.checkTableExists('users');
-      
       if (!tableExists) {
         console.log('Users table not found. Initializing database...');
         await this.initializeDatabase();
@@ -29,7 +24,6 @@ export class DatabaseService implements OnModuleInit {
       throw error;
     }
   }
-
   private async checkTableExists(tableName: string): Promise<boolean> {
     try {
       const queryInterface = this.sequelize.getQueryInterface();
@@ -39,14 +33,10 @@ export class DatabaseService implements OnModuleInit {
       return false;
     }
   }
-
   private async initializeDatabase() {
     try {
-      // Create all tables
       await this.sequelize.sync({ force: true });
       console.log('Database tables created successfully.');
-
-      // Create initial users
       await this.createInitialUsers();
       console.log('Initial users created successfully.');
     } catch (error) {
@@ -54,7 +44,6 @@ export class DatabaseService implements OnModuleInit {
       throw error;
     }
   }
-
   private async createInitialUsers() {
     const users = [
       {
@@ -68,7 +57,6 @@ export class DatabaseService implements OnModuleInit {
         role: 'admin'
       }
     ];
-
     for (const userData of users) {
       const password_hash = await bcrypt.hash(userData.password, 10);
       await User.create({
@@ -78,4 +66,4 @@ export class DatabaseService implements OnModuleInit {
       });
     }
   }
-}
+}

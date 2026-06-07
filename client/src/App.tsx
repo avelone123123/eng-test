@@ -4,7 +4,6 @@ import { HomePage } from './pages/HomePage';
 import RoundPage from './pages/RoundPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import './App.css';
-
 function App() {
   return (
     <Router>
@@ -31,5 +30,4 @@ function App() {
     </Router>
   );
 }
-
-export default App;
+export default App;

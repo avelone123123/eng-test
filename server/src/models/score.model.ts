@@ -1,7 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { User } from './user.model';
 import { Round } from './round.model';
-
 @Table({
   tableName: 'scores',
   timestamps: false,
@@ -20,26 +19,21 @@ export class Score extends Model<Score> {
     allowNull: false,
   })
   user: string;
-
   @ForeignKey(() => Round)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   round: string;
-
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
   taps: number;
-
   @BelongsTo(() => User)
   userRef: User;
-
   @BelongsTo(() => Round)
   roundRef: Round;
 }
-
-export default Score;
+export default Score;

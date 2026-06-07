@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
-
 export const AuthPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       const response = await apiService.auth({ username, password });
       apiService.setToken(response.access_token);
@@ -24,7 +21,6 @@ export const AuthPage: React.FC = () => {
       setLoading(false);
     }
   };
-
   return (
     <div style={{
       display: 'flex',
@@ -47,7 +43,6 @@ export const AuthPage: React.FC = () => {
         <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#666' }}>
           Авторизация
         </h2>
-        
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', color: '#333' }}>
@@ -68,7 +63,6 @@ export const AuthPage: React.FC = () => {
               }}
             />
           </div>
-          
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', color: '#333' }}>
               Пароль:
@@ -88,18 +82,6 @@ export const AuthPage: React.FC = () => {
               }}
             />
           </div>
-
-          {error && (
-            <div style={{
-              color: '#d32f2f',
-              marginBottom: '1rem',
-              textAlign: 'center',
-              fontSize: '0.9rem'
-            }}>
-              {error}
-            </div>
-          )}
-
           <button
             type="submit"
             disabled={loading}
@@ -117,8 +99,17 @@ export const AuthPage: React.FC = () => {
           >
             {loading ? 'Вход...' : 'Войти'}
           </button>
+          {error && (
+            <div style={{
+              color: '#d32f2f',
+              marginTop: '1rem',
+              textAlign: 'center',
+              fontSize: '0.9rem'
+            }}>
+              {error}
+            </div>
+          )}
         </form>
-
         <div style={{
           marginTop: '1rem',
           fontSize: '0.9rem',
@@ -130,4 +121,4 @@ export const AuthPage: React.FC = () => {
       </div>
     </div>
   );
-};
+};

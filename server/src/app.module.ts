@@ -7,7 +7,6 @@ import { Round } from './models/round.model';
 import { Score } from './models/score.model';
 import { AuthModule } from './auth/auth.module';
 import { GamesModule } from './games/games.module';
-
 @Module({
   imports: [
     SequelizeModule.forRoot(databaseConfig),
@@ -17,4 +16,4 @@ import { GamesModule } from './games/games.module';
   ],
   providers: [DatabaseService],
 })
-export class AppModule {}
+export class AppModule {}

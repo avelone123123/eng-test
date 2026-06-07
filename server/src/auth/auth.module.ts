@@ -6,7 +6,6 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from '../models/user.model';
-
 @Module({
   imports: [
     SequelizeModule.forFeature([User]),
@@ -20,4 +19,4 @@ import { User } from '../models/user.model';
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule {}

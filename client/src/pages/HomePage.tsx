@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import type { Round } from '../types/api';
-
 export const HomePage: React.FC = () => {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [creatingRound, setCreatingRound] = useState(false);
   const navigate = useNavigate();
-
   useEffect(() => {
     let initialFetch = true;
     const fetchRounds = async () => {
@@ -23,7 +21,6 @@ export const HomePage: React.FC = () => {
         setRounds(roundsData);
       } catch (err) {
         setError('Ошибка загрузки раундов');
-        // Если ошибка авторизации, перенаправляем на страницу входа
         if (err instanceof Error && err.message.includes('Authentication')) {
           apiService.removeToken();
           navigate('/auth');
@@ -32,40 +29,29 @@ export const HomePage: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchRounds();
-
-    // Устанавливаем интервал для обновления каждые 3 секунды
     const interval = setInterval(fetchRounds, 3000);
-
-    // Очищаем интервал при размонтировании компонента
     return () => clearInterval(interval);
   }, [navigate]);
-
   const handleLogout = () => {
     apiService.removeToken();
     navigate('/auth');
   };
-
   const handleCreateRound = async () => {
     try {
       setCreatingRound(true);
       setError('');
-      await apiService.createRound();
-      // Обновляем список раундов
-      const roundsData = await apiService.getRounds();
-      setRounds(roundsData);
+      const newRound = await apiService.createRound();
+      navigate(`/round/${newRound.uuid}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка создания раунда');
     } finally {
       setCreatingRound(false);
     }
   };
-
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleString('ru-RU');
   };
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active':
@@ -78,11 +64,9 @@ export const HomePage: React.FC = () => {
         return '#007bff';
     }
   };
-
   const handleRoundClick = (uuid: string) => {
     navigate(`/round/${uuid}`);
   };
-
   if (loading) {
     return (
       <div style={{
@@ -102,7 +86,6 @@ export const HomePage: React.FC = () => {
       </div>
     );
   }
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -160,7 +143,6 @@ export const HomePage: React.FC = () => {
             </button>
           </div>
         </header>
-
         <div style={{
           backgroundColor: 'white',
           borderRadius: '8px',
@@ -175,7 +157,6 @@ export const HomePage: React.FC = () => {
               Список раундов
             </h2>
           </div>
-
           {error && (
             <div style={{
               padding: '1rem 2rem',
@@ -186,7 +167,6 @@ export const HomePage: React.FC = () => {
               {error}
             </div>
           )}
-
           {rounds.length === 0 ? (
             <div style={{
               padding: '3rem 2rem',
@@ -303,4 +283,4 @@ export const HomePage: React.FC = () => {
       </div>
     </div>
   );
-};
+};
